@@ -1,8 +1,13 @@
+import * as React from "react";
 import { useState, useEffect } from "react";
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+import { NavigationContainer } from "@react-navigation/native"; // Navigation을 사용하기 위함
+import { PaperProvider } from "react-native-paper"; // react-native-paper 라이브러리를 사용하기 위함
+import AsyncStorage from "@react-native-async-storage/async-storage"; // 로컬에 정보를 저장 -> 사용자 로그인 여부
+// fonts 관련
 import * as Font from "expo-font";
-import { font_styles } from "./assets/fonts/fontSyle";
+
+// component 관련 - navigation을 import
+import LoginStack from "./components/loginComponents/LoginStaack";
 
 export default function App() {
   // 폰트 로드를 위한 state 변수
@@ -30,24 +35,30 @@ export default function App() {
     loadFonts(); // 앱이 시작될 때 폰트를 로드
   }, []);
 
+  // 유저의 로그인 여부를 관리
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // 화면이 랜더링 될 때 로그인 여부를 판단
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const status = await AsyncStorage.getItem("isLoggedIn");
+      if (status === "true") {
+        setIsLoggedIn(true);
+      }
+    };
+    checkLoginStatus();
+  }, []);
+
   if (!fontsLoaded) {
-    return null; // 폰트가 로드되기 전에는 아무것도 렌더링하지 않음
+    // 폰트가 로드되기 전에는 로딩 화면을 표시
+    return null;
   }
+
   return (
-    <View style={styles.container}>
-      <Text style={font_styles.header}>
-        Open up App.js to start working on your app!
-      </Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <PaperProvider>
+        <LoginStack />
+      </PaperProvider>
+    </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
