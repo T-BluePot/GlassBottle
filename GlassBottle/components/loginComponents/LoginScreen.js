@@ -5,6 +5,7 @@ import { TextInput } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { View, Text, TouchableOpacity } from "react-native";
 import { StyleSheet } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 // design 관련
 import { Main_color, Gray_Color } from "../../assets/colors/theme_colors";
 import { font_styles } from "../../assets/fonts/fontSyle";
@@ -12,16 +13,33 @@ import { font_styles } from "../../assets/fonts/fontSyle";
 import BackHeader from "../../assets/reuseComponents/headerComponents/BackHeader";
 import Button from "../../assets/reuseComponents/Button";
 import showToast from "../../assets/reuseComponents/showToast";
+// data 관련
+import { useAuth } from "../../data/LoginContext";
 
 export default function LoginScreen({ navigation }) {
+  const { setIsLoggedIn } = useAuth();
+
   const [emailText, setEmailText] = useState("");
   const [passwordText, setPasswordText] = useState("");
+
+  const loginCheck = async () => {
+    // 로그인 여부를 AsyncStorage에 저장
+    try {
+      await AsyncStorage.setItem("isLoggedIn", "true");
+      setIsLoggedIn(true);
+    } catch (error) {
+      console.error("Error saving login status", error);
+    }
+  };
 
   const handleLogin = () => {
     if (emailText === "" || passwordText === "") {
       showToast("모든 항목을 입력해주세요");
+    } else if (!emailText.includes("@")) {
+      showToast("항목을 올바르게 작성해주세요");
     } else {
-      console.log("와");
+      showToast("로그인 되었습니다.");
+      loginCheck();
     }
   };
 
@@ -42,39 +60,45 @@ export default function LoginScreen({ navigation }) {
       <View style={styles.contentsContainer}>
         <View>
           <Text style={styles.loginTitle}>로그인 하기</Text>
-          <TextInput
-            label="이메일"
-            value={emailText}
-            onChangeText={(text) => setEmailText(text)}
-            keyboardType="email-address"
-            underlineColor={Main_color.main_40}
-            activeUnderlineColor={Main_color.mainHard_50}
-            textColor={Gray_Color.black}
+          <View
             style={{
-              height: 60,
-              justifyContent: "center",
-              backgroundColor: Gray_Color.white,
-              paddingHorizontal: 4,
-              marginBottom: 16,
+              marginBottom: 36,
+              paddingHorizontal: 16,
             }}
-          ></TextInput>
-          <TextInput
-            label="비밀번호"
-            value={passwordText}
-            onChangeText={(text) => setPasswordText(text)}
-            secureTextEntry={true}
-            keyboardType="default"
-            underlineColor={Main_color.main_40}
-            activeUnderlineColor={Main_color.mainHard_50}
-            textColor={Gray_Color.black}
-            style={{
-              height: 60,
-              justifyContent: "center",
-              backgroundColor: Gray_Color.white,
-              paddingHorizontal: 4,
-              marginBottom: 16,
-            }}
-          ></TextInput>
+          >
+            <TextInput
+              label="이메일"
+              value={emailText}
+              onChangeText={(text) => setEmailText(text)}
+              keyboardType="email-address"
+              underlineColor={Main_color.main_40}
+              activeUnderlineColor={Main_color.mainHard_50}
+              textColor={Gray_Color.black}
+              style={{
+                height: 72,
+                justifyContent: "center",
+                backgroundColor: Gray_Color.white,
+                paddingHorizontal: 4,
+                marginBottom: 16,
+              }}
+            ></TextInput>
+            <TextInput
+              label="비밀번호"
+              value={passwordText}
+              onChangeText={(text) => setPasswordText(text)}
+              secureTextEntry={true}
+              keyboardType="default"
+              underlineColor={Main_color.main_40}
+              activeUnderlineColor={Main_color.mainHard_50}
+              textColor={Gray_Color.black}
+              style={{
+                height: 72,
+                justifyContent: "center",
+                backgroundColor: Gray_Color.white,
+                paddingHorizontal: 4,
+              }}
+            ></TextInput>
+          </View>
         </View>
         <View style={styles.bottomContents}>
           <Button
@@ -122,17 +146,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   loginTitle: {
-    marginVertical: 32,
+    marginVertical: 60,
     ...font_styles.title_01,
     color: Gray_Color.black,
-    textAlign: "center",
   },
   bottomContents: {
-    marginTop: 60,
     alignItems: "flex-end",
   },
   signUp: {
-    marginTop: 12,
+    marginTop: 16,
+    marginRight: 4,
     flexDirection: "row",
   },
 });

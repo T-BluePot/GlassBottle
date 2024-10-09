@@ -5,6 +5,7 @@ import StartScreen from "./StartScreen";
 import LoginScreen from "./LoginScreen";
 import SignUpCheckScreen from "./SignUpCheckScreen";
 import SignUpScreen from "./SignUpScreen";
+import SignUpEndScreen from "./SignUpEndScreen";
 
 const Stack = createStackNavigator();
 
@@ -29,6 +30,11 @@ export default function LoginStack() {
       <Stack.Screen
         name="signUp"
         component={SignUpScreen}
+        options={{ headerShown: false }}
+      ></Stack.Screen>
+      <Stack.Screen
+        name="join"
+        component={SignUpEndScreen}
         options={{ headerShown: false }}
       ></Stack.Screen>
     </Stack.Navigator>

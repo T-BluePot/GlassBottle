@@ -18,5 +18,6 @@ export const Main_color = {
   main_20: "#EDDEA4",
   main_10: "#F7A072",
   mainHard_10: "#F88D55",
+  mainHard_20: "#5F2D20",
   mainHard_50: "#00AEE4",
 };
