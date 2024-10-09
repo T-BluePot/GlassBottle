@@ -1,8 +1,16 @@
+import * as React from "react";
 import { useState, useEffect } from "react";
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+import { View, ActivityIndicator } from "react-native";
+import { NavigationContainer } from "@react-navigation/native"; // Navigation을 사용하기 위함
+import { PaperProvider } from "react-native-paper"; // react-native-paper 라이브러리를 사용하기 위함
+import AsyncStorage from "@react-native-async-storage/async-storage"; // 로컬에 정보를 저장 -> 사용자 로그인 여부
+// data 관련
+import { AuthProvider } from "./data/LoginContext";
+// fonts 관련
 import * as Font from "expo-font";
-import { font_styles } from "./assets/fonts/fontSyle";
+// component 관련 - navigation을 import
+import AuthNavigation from "./components/AuthNavigation ";
+import { Main_color } from "./assets/colors/theme_colors";
 
 export default function App() {
   // 폰트 로드를 위한 state 변수
@@ -30,24 +38,34 @@ export default function App() {
     loadFonts(); // 앱이 시작될 때 폰트를 로드
   }, []);
 
+  // 로컬 저장 내용을 초기화
+  // 뭐 만들다가 로컬 비워버리고 싶을 때 사용하셈
+  // useEffect 내부에 함수 선언하면 싹 비워짐
+  const clearAsyncStorage = async () => {
+    try {
+      await AsyncStorage.clear();
+      console.log("AsyncStorage가 초기화되었습니다.");
+    } catch (error) {
+      console.error("AsyncStorage 초기화 중 오류 발생:", error);
+    }
+  };
+
+  // 폰트 또는 로그인 상태가 로드되지 않았을 때 로딩 화면을 표시
   if (!fontsLoaded) {
-    return null; // 폰트가 로드되기 전에는 아무것도 렌더링하지 않음
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color={Main_color.mainHard_50} />
+      </View>
+    );
   }
+
   return (
-    <View style={styles.container}>
-      <Text style={font_styles.header}>
-        Open up App.js to start working on your app!
-      </Text>
-      <StatusBar style="auto" />
-    </View>
+    <AuthProvider>
+      <PaperProvider>
+        <NavigationContainer>
+          <AuthNavigation />
+        </NavigationContainer>
+      </PaperProvider>
+    </AuthProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
