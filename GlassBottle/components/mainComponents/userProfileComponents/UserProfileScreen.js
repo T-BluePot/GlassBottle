@@ -1,5 +1,5 @@
 import { SafeAreaView } from "react-native-safe-area-context";
-import { View, Text } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { StyleSheet, ActivityIndicator } from "react-native";
 import { useState, useEffect } from "react";
 // 사용자 정보 관련
@@ -33,8 +33,10 @@ export default function UserProfileScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View>
-        <Text>내 정보 화면</Text>
         <Text>{user.displayName}</Text>
+        <TouchableOpacity>
+          <Text>로그아웃하기</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -43,5 +45,6 @@ export default function UserProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingHorizontal: 24,
   },
 });
