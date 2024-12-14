@@ -15,6 +15,8 @@ import Button from "../../assets/reuseComponents/Button";
 import showToast from "../../assets/reuseComponents/showToast";
 // data 관련
 import { useAuth } from "../../data/LoginContext";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../data/firebase";
 
 export default function LoginScreen({ navigation }) {
   const { setIsLoggedIn } = useAuth();
@@ -29,17 +31,25 @@ export default function LoginScreen({ navigation }) {
       setIsLoggedIn(true);
     } catch (error) {
       console.error("Error saving login status", error);
+      showToast("로그인에 실패하였습니다. 다시 시도 바랍니다.");
     }
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (emailText === "" || passwordText === "") {
       showToast("모든 항목을 입력해주세요");
-    } else if (!emailText.includes("@")) {
+      return;
+    }
+    if (!emailText.includes("@")) {
       showToast("항목을 올바르게 작성해주세요");
-    } else {
-      showToast("로그인 되었습니다.");
+      return;
+    }
+    try {
+      await signInWithEmailAndPassword(auth, emailText, passwordText); // Firebase Auth로 로그인 시도
+      showToast("로그인 되었습니다"); // 로그인 성공 메시지
       loginCheck();
+    } catch (error) {
+      showToast("아이디 및 비밀번호 정보가 없습니다"); // 에러 메시지 출력
     }
   };
 
