@@ -10,8 +10,9 @@ import { Main_color, Gray_Color } from "../../assets/colors/theme_colors";
 import { font_styles } from "../../assets/fonts/fontSyle";
 // component 관련
 import BackHeader from "../../assets/reuseComponents/headerComponents/BackHeader";
-import Button from "../../assets/reuseComponents/Button";
-import showToast from "../../assets/reuseComponents/showToast";
+import Button from "../../assets/reuseComponents/otherComponents/Button";
+import showToast from "../../assets/reuseComponents/functions/showToast";
+import { isValidEmail } from "../../assets/reuseComponents/functions/checkEmail";
 // data 관련
 import { auth } from "../../data/firebase";
 import {
@@ -130,7 +131,7 @@ export default function SignUpScreen({ navigation }) {
             }}
           ></TextInput>
           <View>
-            {emailText !== "" && !emailText.includes("@") ? (
+            {emailText !== "" && isValidEmail(emailText) ? (
               <Text
                 style={{
                   ...font_styles.description,
@@ -138,7 +139,7 @@ export default function SignUpScreen({ navigation }) {
                   marginLeft: 6,
                 }}
               >
-                이메일 형식에 맞지 않습니다
+                이메일 형식이 맞지 않습니다
               </Text>
             ) : null}
           </View>

@@ -7,7 +7,7 @@ import { Main_color, Gray_Color } from "../../assets/colors/theme_colors";
 import { font_styles } from "../../assets/fonts/fontSyle";
 // component 관련
 import BackHeader from "../../assets/reuseComponents/headerComponents/BackHeader";
-import Button from "../../assets/reuseComponents/Button";
+import Button from "../../assets/reuseComponents/otherComponents/Button";
 
 export default function SignUpCheckScreen({ navigation }) {
   return (

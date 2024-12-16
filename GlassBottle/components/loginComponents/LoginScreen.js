@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { TextInput } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -11,8 +11,9 @@ import { Main_color, Gray_Color } from "../../assets/colors/theme_colors";
 import { font_styles } from "../../assets/fonts/fontSyle";
 // component 관련
 import BackHeader from "../../assets/reuseComponents/headerComponents/BackHeader";
-import Button from "../../assets/reuseComponents/Button";
-import showToast from "../../assets/reuseComponents/showToast";
+import Button from "../../assets/reuseComponents/otherComponents/Button";
+import showToast from "../../assets/reuseComponents/functions/showToast";
+import { isValidEmail } from "../../assets/reuseComponents/functions/checkEmail";
 // data 관련
 import { useAuth } from "../../data/LoginContext";
 import { signInWithEmailAndPassword } from "firebase/auth";
@@ -29,6 +30,7 @@ export default function LoginScreen({ navigation }) {
     try {
       await AsyncStorage.setItem("isLoggedIn", "true");
       setIsLoggedIn(true);
+      showToast("로그인 되었습니다"); // 로그인 성공 메시지
     } catch (error) {
       console.error("Error saving login status", error);
       showToast("로그인에 실패하였습니다. 다시 시도 바랍니다.");
@@ -40,16 +42,15 @@ export default function LoginScreen({ navigation }) {
       showToast("모든 항목을 입력해주세요");
       return;
     }
-    if (!emailText.includes("@")) {
-      showToast("항목을 올바르게 작성해주세요");
+    if (!isValidEmail(emailText)) {
+      showToast("이메일 형식이 맞지 않습니다");
       return;
     }
     try {
       await signInWithEmailAndPassword(auth, emailText, passwordText); // Firebase Auth로 로그인 시도
-      showToast("로그인 되었습니다"); // 로그인 성공 메시지
       loginCheck();
     } catch (error) {
-      showToast("아이디 및 비밀번호 정보가 없습니다"); // 에러 메시지 출력
+      showToast("회원 정보가 없습니다"); // 에러 메시지 출력
     }
   };
 

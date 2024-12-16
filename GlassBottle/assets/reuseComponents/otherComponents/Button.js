@@ -1,7 +1,7 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { Text, TouchableOpacity } from "react-native";
 import { StyleSheet } from "react-native";
-import { Gray_Color, Main_color } from "../colors/theme_colors";
-import { font_styles } from "../../assets/fonts/fontSyle"; // 메인 폰트 스타일
+import { Gray_Color, Main_color } from "../../colors/theme_colors";
+import { font_styles } from "../../fonts/fontSyle"; // 메인 폰트 스타일
 
 export default function Button({ style, onPress, btn_text }) {
   return (
