@@ -4,7 +4,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import UserProfileScreen from "./UserProfileScreen";
 import ResignScrren from "./ResignScrren";
 import ReLoginScreen from "./ReLoginScreen";
-import { font_styles } from "../../../assets/fonts/fontSyle";
+import EditInfoScreen from "./EditInfoScreen";
 
 const Stack = createStackNavigator();
 
@@ -22,6 +22,7 @@ export default function UserProfileStack() {
       ></Stack.Screen>
       <Stack.Screen name="resign" component={ResignScrren}></Stack.Screen>
       <Stack.Screen name="relogin" component={ReLoginScreen}></Stack.Screen>
+      <Stack.Screen name="edit" component={EditInfoScreen}></Stack.Screen>
     </Stack.Navigator>
   );
 }

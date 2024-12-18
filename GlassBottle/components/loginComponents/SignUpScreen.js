@@ -131,7 +131,7 @@ export default function SignUpScreen({ navigation }) {
             }}
           ></TextInput>
           <View>
-            {emailText !== "" && isValidEmail(emailText) ? (
+            {emailText !== "" && !isValidEmail(emailText) ? (
               <Text
                 style={{
                   ...font_styles.description,

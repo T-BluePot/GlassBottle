@@ -7,12 +7,7 @@ import XTitleHeader from "../../../assets/reuseComponents/headerComponents/XTitl
 import { Gray_Color, Main_color } from "../../../assets/colors/theme_colors";
 import Button from "../../../assets/reuseComponents/otherComponents/Button";
 import { font_styles } from "../../../assets/fonts/fontSyle";
-import Octicons from "@expo/vector-icons/Octicons";
 import useHideBottomBar from "../../../assets/reuseComponents/functions/useHideBottomBar";
-// firebase
-import { deleteUser } from "firebase/auth";
-import { auth } from "../../../data/firebase";
-import showToast from "../../../assets/reuseComponents/functions/showToast";
 
 export default function ResignScreen({ navigation }) {
   useHideBottomBar(navigation);

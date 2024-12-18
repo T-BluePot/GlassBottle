@@ -1,14 +1,13 @@
 import { SafeAreaView } from "react-native-safe-area-context";
 import { View, Text, TouchableOpacity } from "react-native";
-import {
-  StyleSheet,
-  ActivityIndicator,
-  useWindowDimensions,
-} from "react-native";
+import { StyleSheet, ActivityIndicator } from "react-native";
 import { useState, useEffect } from "react";
 // 사용자 정보 관련
 import { auth } from "../../../data/firebase";
 import { onAuthStateChanged } from "firebase/auth";
+import { useAuth } from "../../../data/LoginContext";
+import { signOut } from "firebase/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 // 디자인 관련
 import { Gray_Color, Main_color } from "../../../assets/colors/theme_colors";
 import Octicons from "@expo/vector-icons/Octicons";
@@ -16,14 +15,10 @@ import { font_styles } from "../../../assets/fonts/fontSyle";
 // 컴포넌트 관련
 import Header from "../../../assets/reuseComponents/headerComponents/Header";
 import showToast from "../../../assets/reuseComponents/functions/showToast";
-// 데이터 관련
-import { useAuth } from "../../../data/LoginContext";
-import { signOut } from "firebase/auth";
 
 export default function UserProfileScreen({ navigation }) {
-  const heigth = useWindowDimensions().height;
-
   const [user, setUser] = useState(null);
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
@@ -40,6 +35,7 @@ export default function UserProfileScreen({ navigation }) {
 
   const handleLogout = async () => {
     await signOut(auth);
+    await AsyncStorage.setItem("isLoggedIn", "false");
     setIsLoggedIn(false);
     showToast("로그아웃 되었습니다");
   };
@@ -61,18 +57,15 @@ export default function UserProfileScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       <Header children={"내 정보"} />
       <View style={styles.topContents}>
-        <TouchableOpacity style={styles.userInfo} activeOpacity={0.8}>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "baseline",
-            }}
-          >
-            <Text style={styles.displayName}>{user.displayName}</Text>
-            <Text style={styles.displayNameSub}>의 보관함</Text>
-          </View>
-          <Octicons name="chevron-right" size={24} color={Gray_Color.gray_30} />
-        </TouchableOpacity>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "baseline",
+          }}
+        >
+          <Text style={styles.displayName}>{user.displayName}</Text>
+          <Text style={styles.displayNameSub}>의 보관함</Text>
+        </View>
         <View style={styles.contentsContainer}>
           <TouchableOpacity style={styles.letterSpace}>
             <Text style={styles.letterTitle}>보낸 편지</Text>
@@ -175,7 +168,7 @@ const styles = StyleSheet.create({
     backgroundColor: Gray_Color.gray_10,
   },
   serviceTitle: {
-    ...font_styles.subtitle,
+    fontFamily: "Pretendard-Bold",
     color: Gray_Color.black,
     paddingHorizontal: 24,
     marginVertical: 16,

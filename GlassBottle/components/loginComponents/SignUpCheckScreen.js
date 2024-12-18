@@ -42,7 +42,7 @@ export default function SignUpCheckScreen({ navigation }) {
             이용약관
           </Text>
           <Text style={styles.bottomSub}> / </Text>
-          <Text style={styles.bottomSub}>개안정보 처리방침</Text>
+          <Text style={styles.bottomSub}>개인정보 처리방침</Text>
           <Text style={styles.bottomSub}> 동의로 간주합니다</Text>
         </View>
       </View>
