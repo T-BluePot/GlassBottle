@@ -7,7 +7,7 @@ import { Main_color, Gray_Color } from "../../assets/colors/theme_colors";
 import { font_styles } from "../../assets/fonts/fontSyle";
 // component 관련
 import BackHeader from "../../assets/reuseComponents/headerComponents/BackHeader";
-import Button from "../../assets/reuseComponents/Button";
+import Button from "../../assets/reuseComponents/otherComponents/Button";
 
 export default function SignUpCheckScreen({ navigation }) {
   return (
@@ -42,7 +42,7 @@ export default function SignUpCheckScreen({ navigation }) {
             이용약관
           </Text>
           <Text style={styles.bottomSub}> / </Text>
-          <Text style={styles.bottomSub}>개안정보 처리방침</Text>
+          <Text style={styles.bottomSub}>개인정보 처리방침</Text>
           <Text style={styles.bottomSub}> 동의로 간주합니다</Text>
         </View>
       </View>

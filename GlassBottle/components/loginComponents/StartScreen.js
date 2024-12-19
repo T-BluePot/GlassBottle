@@ -6,7 +6,7 @@ import { Main_color, Gray_Color } from "../../assets/colors/theme_colors"; // �
 import { font_styles } from "../../assets/fonts/fontSyle"; // 메인 폰트 스타일
 import loginImage_path from "../../assets/images/login_file/loginImage_path";
 // componenet 관련
-import Button from "../../assets/reuseComponents/Button";
+import Button from "../../assets/reuseComponents/otherComponents/Button";
 
 export default function StartScreen({ navigation }) {
   return (
@@ -46,7 +46,7 @@ export default function StartScreen({ navigation }) {
             이용약관
           </Text>
           <Text style={styles.bottomSub}> / </Text>
-          <Text style={styles.bottomSub}>개안정보 처리방침</Text>
+          <Text style={styles.bottomSub}>개인정보 처리방침</Text>
           <Text style={styles.bottomSub}> 동의로 간주합니다</Text>
         </View>
       </View>

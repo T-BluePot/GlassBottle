@@ -8,6 +8,7 @@ export const Gray_Color = {
   gray_40: "#888888",
   gray_30: "#999999",
   gray_20: "#D0D0D0",
+  gray_10: "#f1f3f5",
   white: "#fff",
 };
 
@@ -20,4 +21,5 @@ export const Main_color = {
   mainHard_10: "#F88D55",
   mainHard_20: "#5F2D20",
   mainHard_50: "#00AEE4",
+  main_red: "#e50000",
 };

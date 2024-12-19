@@ -46,6 +46,12 @@ export default function BottomStack() {
       <Tab.Screen
         name="UserStack"
         component={UserProfileStack}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault(); // 기본 동작 방지
+            navigation.navigate("UserStack", { screen: "UserProfile" }); // Stack의 첫 번째 화면으로 이동
+          },
+        })}
         options={{
           headerShown: false,
           tabBarIcon: ({ focused, color }) => {
