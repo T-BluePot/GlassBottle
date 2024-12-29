@@ -30,6 +30,7 @@ export default function App() {
       "Pretendard-Light": require("./assets/fonts/Pretendard-Light.ttf"),
       "Pretendard-ExtraLight": require("./assets/fonts/Pretendard-ExtraLight.ttf"),
       "Pretendard-Thin": require("./assets/fonts/Pretendard-Thin.ttf"),
+      "Ongliep-BakDaHyun": require("./assets/fonts/온글잎 박다현체.ttf"),
     });
     setFontsLoaded(true); // 폰트 로드가 완료되면 상태를 변경
   };

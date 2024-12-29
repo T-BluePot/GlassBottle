@@ -29,7 +29,8 @@
     "yarn": "^1.22.22"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0"
+    "@babel/core": "^7.20.0",
+    "babel-plugin-module-resolver": "^5.0.2"
   },
   "private": true
 }
