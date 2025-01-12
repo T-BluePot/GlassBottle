@@ -8,6 +8,8 @@ import { onAuthStateChanged } from "firebase/auth";
 import { useAuth } from "../../../data/LoginContext";
 import { signOut } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
+
 // 디자인 관련
 import { Gray_Color, Main_color } from "../../../assets/colors/theme_colors";
 import Octicons from "@expo/vector-icons/Octicons";
@@ -23,16 +25,17 @@ export default function UserProfileScreen({ navigation }) {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser); // 로그인된 사용자의 정보 저장
+        AsyncStorage.setItem("user", JSON.stringify(user));
       } else {
         setUser(null); // 로그아웃 시 사용자 정보 초기화
       }
     });
-
+    
     return () => unsubscribe(); // 언마운트 시 구독 해제
   }, []);
 
   const { setIsLoggedIn } = useAuth();
-
+  
   const handleLogout = async () => {
     await signOut(auth);
     await AsyncStorage.setItem("isLoggedIn", "false");

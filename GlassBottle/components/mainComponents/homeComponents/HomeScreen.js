@@ -10,12 +10,30 @@ import {
   Image,
   TouchableOpacity,
   Text,
+  ActivityIndicator
 } from "react-native";
+import { collection, onSnapshot, doc, getDoc, updateDoc, arrayUnion, query, orderBy, } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+import { db, auth } from "../../../data/firebase"; // Firebase 설정 파일
+//유저 정보 가져와 사용하기
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import CircleButton from "../../common/button/CircleButton.js";
+import CommonModal from "../../common/modal/CommonModal.js"
+
 import mainImage_path from "../../../assets/images/Icons/Main_Icons/mainImage_path.js";
+import { Gray_Color, Main_color } from "../../../assets/colors/theme_colors"; // 경로에 맞게 수정
+
 
 export default function HomeScreen() {
   const translateY = useRef(new Animated.Value(0)).current;
-  const [modalVisible, setModalVisible] = useState(false); // modalVisible 상태 선언
+  const [writeModalVisible, setWriteModalVisible] = useState(false); // 편지 작성 모달
+  const [readModalVisible, setReadModalVisible] = useState(false); // 편지 읽기 모달
+  const [newLetterAdded, setNewLetterAdded] = useState(false); // 새 문서 추가 여부
+  const [latestDocumentId, setLatestDocumentId] = useState(null); // 가장 최근 문서 ID
+  const [currentLetter, setCurrentLetter] = useState(null); // 현재 문서 데이터
+  const [canViewLetter, setCanViewLetter] = useState(false); // 현재 사용자가 편지를 읽을 수 있는지 여부
+  const [user, setUser] = useState(null); // 유저 정보 상태
 
   useEffect(() => {
     const bounce = Animated.loop(
@@ -41,9 +59,123 @@ export default function HomeScreen() {
     bounce.start();
 
     // 컴포넌트 언마운트 시 애니메이션 정지
-    return () => bounce.stop();
-  }, [translateY]);
+    // return () => bounce.stop();
+  }, [translateY, newLetterAdded, canViewLetter]);
 
+  // 1-2. 유저 정보 가져오기
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        console.log("유저 정보 111 : ", currentUser)
+        const userData = JSON.stringify(currentUser)
+        await AsyncStorage.setItem("user", userData);
+        setUser(currentUser);
+      } else {
+        setUser(null); // 로그아웃 시 사용자 정보 초기화
+      }
+    });
+
+    return () => unsubscribe(); // 언마운트 시 구독 해제
+  }, []);
+
+  // 2. Firestore 실시간 구독
+  useEffect(() => {
+    // user가 null이 아니면 실행
+    console.log("user가 null입니다. Firestore 구독을 실행하지 않습니다.", user)
+    if (!user) {
+      console.log("user가 null입니다. Firestore 구독을 실행하지 않습니다.");
+      return;
+    }
+    const unsubscribe = onSnapshot(query(collection(db, "letters"), orderBy("timestamp", "desc")), // query 메서드 사용
+      (snapshot) => {
+        console.log("현재 유저 정보 :", user);
+        if (!snapshot.empty) {
+          console.log("실시간 업데이트 감지!");
+          const latestDoc = snapshot.docs[0];
+          console.log("가장 최근 문서: ", latestDoc.data()); // 디버깅용 로그
+          setLatestDocumentId(latestDoc.id); // 최신 문서 ID 저장
+          setNewLetterAdded(true); // 새 문서가 추가됨을 표시
+          // 읽은 사람 배열(viewers)에 현재 사용자가 없는지 확인
+          if (!latestDoc.data().viewers?.includes(user.uid)) {
+            setCanViewLetter(true); // 읽을 수 있는 상태로 설정
+          } else {
+            setCanViewLetter(false); // 이미 읽은 사용자
+          }
+        } else {
+          console.log("컬렉션이 비어 있습니다."); // 디버깅용 로그
+        }
+      });
+
+    return () => unsubscribe();
+  }, [user]); 
+
+  // 3. Firestore에서 문서 가져오기
+  const handleViewDocument = async () => {
+    if (!latestDocumentId) return;
+
+    try {
+      console.log("최근 문서 가져오기", latestDocumentId)
+      const documentRef = doc(db, "letters", latestDocumentId);
+      const documentSnapshot = await getDoc(documentRef);
+
+      if (documentSnapshot.exists()) {
+        const data = documentSnapshot.data();
+        setCurrentLetter(data); // 문서 데이터 저장
+
+        // 읽은 사람 배열(viewers)에 현재 사용자가 없는지 확인
+        if (!data.viewers?.includes(user.uid)) {
+          setCanViewLetter(true); // 읽을 수 있는 상태로 설정
+        } else {
+          setCanViewLetter(false); // 이미 읽은 사용자
+        }
+
+        setReadModalVisible(true); // 읽기 모달 열기
+      } else {
+        console.log("문서가 존재하지 않습니다.");
+      }
+    } catch (error) {
+      console.error("문서를 가져오는 중 오류 발생:", error);
+    }
+  };
+  // 4. 읽은 사람 배열에 사용자 추가
+  const markAsRead = async () => {
+    if (!latestDocumentId || !user) {
+      console.log("현재 유저 정보가 없습니다. 업데이트를 중단합니다.");
+      return; // user가 null이면 실행 중단
+    }
+    console.log("현재 유저 정보22 :", user)
+    try {
+      const documentRef = doc(db, "letters", latestDocumentId);
+      const documentSnapshot = await getDoc(documentRef);
+
+      if (documentSnapshot.exists()) {
+        const data = documentSnapshot.data();
+
+        // viewers 배열이 없으면 생성 후 사용자 추가
+        await updateDoc(documentRef, {
+          viewers: arrayUnion(user.uid),
+        });
+
+        console.log("사용자가 읽은 상태로 표시되었습니다.");
+      }
+    } catch (error) {
+      console.error("읽은 상태를 업데이트하는 중 오류 발생:", error);
+    }
+  };
+
+  // onSave 함수 정의
+  const handleSave = (title, content) => {
+    console.log('저장된 제목:', title);
+    console.log('저장된 내용:', content);
+  };
+  if (!user) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color={Main_color.mainHard_50} />
+        {/* 로딩 인디케이터 */}
+      </View>
+    );
+  }
   return (
     <SafeAreaView style={styles.container}>
       <ImageBackground
@@ -52,27 +184,51 @@ export default function HomeScreen() {
       >
         <View style={styles.bottle}>
           <View />
-          <View>
-            <TouchableOpacity onPress={() => setModalVisible(true)}>
-              <Animated.Image
-                source={mainImage_path.glassBottle}
-                style={[
-                  styles.image,
-                  { transform: [{ translateY }] }, // 애니메이션 적용
-                ]}
-              />
-            </TouchableOpacity>
+          {newLetterAdded && canViewLetter ? (  // 새 문서가 추가되었고, 현재 사용자가 읽지 않은 경우에만 표시
+            <View>
+              <TouchableOpacity onPress={() => { handleViewDocument(); setReadModalVisible(true); }}>
+                <Animated.Image
+                  source={mainImage_path.glassBottle}
+                  style={[
+                    styles.image,
+                    { transform: [{ translateY }] }, // 애니메이션 적용
+
+                  ]}
+                />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.emptyMessageContainer}>
+              <View style={[styles.emptyMessageCard, styles.boxShadow]}>
+                <Text style={styles.emptyMessage}>
+                  아직 아무 편지가 오지 않았네요..{"\n"}누군가에게 편지를 보내보는 것은 어떠신가요?
+                </Text>
+              </View>
+            </View>
+          )}
+          <View style={styles.buttonContainer}>
+            <CircleButton onPress={() => setWriteModalVisible(true)} />
           </View>
         </View>
 
+        {/* 편지쓰기 */}
+        <CommonModal
+          visible={writeModalVisible}
+          writer={{
+            name: user?.displayName || "익명 사용자", // 기본값 설정
+            id: user?.uid || "unknown",
+          }}
+          onClose={() => setWriteModalVisible(false)} // 모달 닫기
+          onSave={handleSave} // 저장 함수 전달
+        />
 
 
         {/* 모달 */}
         <Modal
           transparent={true}
-          visible={modalVisible}
+          visible={readModalVisible}
           animationType="fade"
-          onRequestClose={() => setModalVisible(false)}
+          onRequestClose={() => setReadModalVisible(false)}
         >
           <View style={styles.modalBackground}>
             <View style={styles.modalContainer}>
@@ -87,24 +243,24 @@ export default function HomeScreen() {
                   <View style={styles.modalHeader}>
                     <Text style={styles.modalTitle}>오늘의 편지</Text>
                     <View style={styles.receiver}>
-                      
-                      <Text style={styles.recipient}>○○에게</Text>
+
+                      <Text style={styles.recipient}>{currentLetter?.receiver || "알 수 없음"}</Text>
                     </View>
                   </View>
                   <Text style={styles.modalBody}>
-                    관람할 집회는 앞으로 토요일만 한다고 한다.
-                    {"\n"}이제부터 시작이다!{"\n"}
-                    우리나라를 살려야 한다.{"\n"}세상이 멸망.{"\n"}
-                    나는 지금 1초씩 줄어들어가고 있다.{"\n"}
-                    그들이 왜 그렇게 열심히 얘기하는지 알 것 같다...
+                    {currentLetter?.message || "내용을 불러오는 중..."}
                   </Text>
-                  {/* 보내기 버튼 */}
+                  <Text>
+                    {currentLetter?.sender ? `${currentLetter.sender.name}가` : "내용을 불러오는 중..."}
+                  </Text>
+                  {/* 닫기 버튼 */}
                   <TouchableOpacity
                     style={styles.sendButton}
-                    onPress={() => setModalVisible(false)}
+                    onPress={() => { markAsRead(), setReadModalVisible(false) }}
                   >
-                    <Text style={styles.sendButtonText}>보내기</Text>
+                    <Text style={styles.sendButtonText}>닫기</Text>
                   </TouchableOpacity>
+
                 </View>
               </ImageBackground>
               {/* 텍스트 내용 */}
@@ -152,6 +308,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     alignItems: "center",
   },
+  buttonContainer: {
+    position: "absolute",
+    bottom: 20, // 화면 하단으로부터 20px
+    right: 20,  // 화면 오른쪽으로부터 20px
+  },
   image: {
     // width: 100, // 이미지 크기 조정
     // height: 100,
@@ -179,11 +340,11 @@ const styles = StyleSheet.create({
   modalContent: {
     // paddingInline: 120,
     // paddingTop: 50,
-    flex:1,
+    flex: 1,
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    gap:5,
+    gap: 5,
   },
   modalTitle: {
     fontSize: 24,
@@ -192,16 +353,16 @@ const styles = StyleSheet.create({
   },
   modalHeader: {
     // flexDirection: "row",
-    flex:0.15,
+    flex: 0.15,
     alignItems: "center",
-    justifyContent:"center",
+    justifyContent: "center",
     marginBottom: 20,
   },
-  receiver:{
-    flex:1,
-    flexDirection:"row",
-    alignItems:"center",
-    justifyContent:"center" 
+  receiver: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center"
   },
   profileImage: {
     width: 24,
@@ -239,7 +400,29 @@ const styles = StyleSheet.create({
   sendButtonText: {
     color: "black",
     fontSize: 20,
-    fontWeight:"bold"
+    fontWeight: "bold"
   },
-
+  emptyMessageContainer: {
+    flex: 1, // 화면 전체를 차지하도록 설정
+    justifyContent: "center", // 수직 중앙 정렬
+    alignItems: "center", // 수평 중앙 정렬
+  },
+  emptyMessageCard: {
+    padding: 24,
+    borderRadius: 16,
+    backgroundColor: Gray_Color.white
+  },
+  boxShadow: {
+    shadowColor: "rgba(100, 100, 111, 0.2)", // 그림자의 색상
+    shadowOffset: { width: 0, height: 7 },  // x, y 축의 그림자 거리
+    shadowOpacity: 0.2,                     // 그림자의 투명도
+    shadowRadius: 29,                       // 그림자의 번짐 정도
+    elevation: 5,                           // Android에서 그림자 표시
+  },
+  emptyMessage: {
+    fontFamily: "Ongliep-BakDaHyun",
+    fontSize: 24,
+    color: Gray_Color.gray_90,
+    textAlign: "center",
+  },
 });

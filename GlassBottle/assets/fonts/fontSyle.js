@@ -27,4 +27,8 @@ export const font_styles = {
     fontFamily: "Pretendard-Medium",
     fontSize: 12,
   },
+  description:{
+    fontFamily: "Ongliep-BakDaHyun",
+    fontSize: 16
+  }
 };
