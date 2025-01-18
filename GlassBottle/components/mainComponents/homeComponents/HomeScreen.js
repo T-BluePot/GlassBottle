@@ -15,6 +15,8 @@ import {
 import { collection, onSnapshot, doc, getDoc, updateDoc, arrayUnion, query, orderBy, } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { db, auth } from "../../../data/firebase"; // Firebase 설정 파일
+import { Audio } from 'expo-av';
+
 //유저 정보 가져와 사용하기
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -34,6 +36,43 @@ export default function HomeScreen() {
   const [currentLetter, setCurrentLetter] = useState(null); // 현재 문서 데이터
   const [canViewLetter, setCanViewLetter] = useState(false); // 현재 사용자가 편지를 읽을 수 있는지 여부
   const [user, setUser] = useState(null); // 유저 정보 상태
+  const soundRef = useRef(null); // sound 객체를 useRef로 관리
+
+  // 홈에서만 배경음 재생 
+  useEffect(() => {
+    const playBackgroundSound = async () => {
+      try {
+        // 소리 객체 생성
+        const sound = new Audio.Sound();
+
+        // 파도 소리 파일 로드
+        await sound.loadAsync(require("../../../assets/sounds/background/sea-wave-34088.mp3"));
+
+        // 볼륨 조정 (50% 볼륨)
+        await sound.setVolumeAsync(0.1);
+
+        // 반복 재생 설정
+        await sound.setIsLoopingAsync(true);
+
+        // 소리 재생
+        await sound.playAsync();
+
+        // sound 객체를 useRef로 저장
+        soundRef.current = sound;
+      } catch (error) {
+        console.error("Error playing background sound:", error);
+      }
+    };
+
+    playBackgroundSound();
+
+    // 컴포넌트가 제거될 때 소리 정리
+    return () => {
+      if (soundRef.current) {
+        soundRef.current.unloadAsync(); // 메모리 해제
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const bounce = Animated.loop(
@@ -107,7 +146,7 @@ export default function HomeScreen() {
       });
 
     return () => unsubscribe();
-  }, [user]); 
+  }, [user]);
 
   // 3. Firestore에서 문서 가져오기
   const handleViewDocument = async () => {
@@ -128,8 +167,6 @@ export default function HomeScreen() {
         } else {
           setCanViewLetter(false); // 이미 읽은 사용자
         }
-
-        setReadModalVisible(true); // 읽기 모달 열기
       } else {
         console.log("문서가 존재하지 않습니다.");
       }
@@ -176,6 +213,35 @@ export default function HomeScreen() {
       </View>
     );
   }
+  // 소리를 재생하는 함수
+  const playSounds = async () => {
+    try {
+      // 첫 번째 소리 재생
+      const sound1 = new Audio.Sound();
+      await sound1.loadAsync(require('../../../assets/sounds/effects/uncorking-fine-scotch-3-83862.mp3'));
+      await sound1.playAsync(0.5);
+
+      // 첫 번째 소리가 끝날 때까지 기다리지 않고 딜레이를 주기
+      setTimeout(async () => {
+        const sound2 = new Audio.Sound();
+        await sound2.loadAsync(require('../../../assets/sounds/effects/newspaper-foley-4-196721_[cut_1sec].mp3'));
+        await sound2.playAsync(0.5);
+        setTimeout(() => {
+          setReadModalVisible(true); // 모달 열기
+        }, 200); // 300ms 딜레이
+
+        // 두 번째 소리가 끝난 후 리소스 해제
+        sound2.setOnPlaybackStatusUpdate((status) => {
+          if (status.didJustFinish) {
+            sound2.unloadAsync();
+          }
+        });
+      }, 400); // 500ms 딜레이
+    } catch (error) {
+      console.error('Error playing sounds:', error);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ImageBackground
@@ -186,7 +252,7 @@ export default function HomeScreen() {
           <View />
           {newLetterAdded && canViewLetter ? (  // 새 문서가 추가되었고, 현재 사용자가 읽지 않은 경우에만 표시
             <View>
-              <TouchableOpacity onPress={() => { handleViewDocument(); setReadModalVisible(true); }}>
+              <TouchableOpacity onPress={() => { playSounds(); handleViewDocument(); }}>
                 <Animated.Image
                   source={mainImage_path.glassBottle}
                   style={[
