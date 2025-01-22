@@ -10,22 +10,30 @@ import {
   Image,
   TouchableOpacity,
   Text,
-  ActivityIndicator
+  ActivityIndicator,
 } from "react-native";
-import { collection, onSnapshot, doc, getDoc, updateDoc, arrayUnion, query, orderBy, } from "firebase/firestore";
+import {
+  collection,
+  onSnapshot,
+  doc,
+  getDoc,
+  updateDoc,
+  arrayUnion,
+  query,
+  orderBy,
+} from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { db, auth } from "../../../data/firebase"; // Firebase 설정 파일
-import { Audio } from 'expo-av';
+import { Audio } from "expo-av";
 
 //유저 정보 가져와 사용하기
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import CircleButton from "../../common/button/CircleButton.js";
-import CommonModal from "../../common/modal/CommonModal.js"
+import CommonModal from "../../common/modal/CommonModal.js";
 
 import mainImage_path from "../../../assets/images/Icons/Main_Icons/mainImage_path.js";
 import { Gray_Color, Main_color } from "../../../assets/colors/theme_colors"; // 경로에 맞게 수정
-
 
 export default function HomeScreen() {
   const translateY = useRef(new Animated.Value(0)).current;
@@ -38,7 +46,7 @@ export default function HomeScreen() {
   const [user, setUser] = useState(null); // 유저 정보 상태
   const soundRef = useRef(null); // sound 객체를 useRef로 관리
 
-  // 홈에서만 배경음 재생 
+  // 홈에서만 배경음 재생
   useEffect(() => {
     const playBackgroundSound = async () => {
       try {
@@ -46,7 +54,9 @@ export default function HomeScreen() {
         const sound = new Audio.Sound();
 
         // 파도 소리 파일 로드
-        await sound.loadAsync(require("../../../assets/sounds/background/sea-wave-34088.mp3"));
+        await sound.loadAsync(
+          require("../../../assets/sounds/background/sea-wave-34088.mp3")
+        );
 
         // 볼륨 조정 (50% 볼륨)
         await sound.setVolumeAsync(0.1);
@@ -105,8 +115,8 @@ export default function HomeScreen() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        console.log("유저 정보 111 : ", currentUser)
-        const userData = JSON.stringify(currentUser)
+        console.log("유저 정보 111 : ", currentUser);
+        const userData = JSON.stringify(currentUser);
         await AsyncStorage.setItem("user", userData);
         setUser(currentUser);
       } else {
@@ -120,12 +130,13 @@ export default function HomeScreen() {
   // 2. Firestore 실시간 구독
   useEffect(() => {
     // user가 null이 아니면 실행
-    console.log("user가 null입니다. Firestore 구독을 실행하지 않습니다.", user)
+    console.log("user가 null입니다. Firestore 구독을 실행하지 않습니다.", user);
     if (!user) {
       console.log("user가 null입니다. Firestore 구독을 실행하지 않습니다.");
       return;
     }
-    const unsubscribe = onSnapshot(query(collection(db, "letters"), orderBy("timestamp", "desc")), // query 메서드 사용
+    const unsubscribe = onSnapshot(
+      query(collection(db, "letters"), orderBy("timestamp", "desc")), // query 메서드 사용
       (snapshot) => {
         console.log("현재 유저 정보 :", user);
         if (!snapshot.empty) {
@@ -143,7 +154,8 @@ export default function HomeScreen() {
         } else {
           console.log("컬렉션이 비어 있습니다."); // 디버깅용 로그
         }
-      });
+      }
+    );
 
     return () => unsubscribe();
   }, [user]);
@@ -153,7 +165,7 @@ export default function HomeScreen() {
     if (!latestDocumentId) return;
 
     try {
-      console.log("최근 문서 가져오기", latestDocumentId)
+      console.log("최근 문서 가져오기", latestDocumentId);
       const documentRef = doc(db, "letters", latestDocumentId);
       const documentSnapshot = await getDoc(documentRef);
 
@@ -180,7 +192,7 @@ export default function HomeScreen() {
       console.log("현재 유저 정보가 없습니다. 업데이트를 중단합니다.");
       return; // user가 null이면 실행 중단
     }
-    console.log("현재 유저 정보22 :", user)
+    console.log("현재 유저 정보22 :", user);
     try {
       const documentRef = doc(db, "letters", latestDocumentId);
       const documentSnapshot = await getDoc(documentRef);
@@ -202,8 +214,8 @@ export default function HomeScreen() {
 
   // onSave 함수 정의
   const handleSave = (title, content) => {
-    console.log('저장된 제목:', title);
-    console.log('저장된 내용:', content);
+    console.log("저장된 제목:", title);
+    console.log("저장된 내용:", content);
   };
   if (!user) {
     return (
@@ -218,13 +230,17 @@ export default function HomeScreen() {
     try {
       // 첫 번째 소리 재생
       const sound1 = new Audio.Sound();
-      await sound1.loadAsync(require('../../../assets/sounds/effects/uncorking-fine-scotch-3-83862.mp3'));
+      await sound1.loadAsync(
+        require("../../../assets/sounds/effects/uncorking-fine-scotch-3-83862.mp3")
+      );
       await sound1.playAsync(0.5);
 
       // 첫 번째 소리가 끝날 때까지 기다리지 않고 딜레이를 주기
       setTimeout(async () => {
         const sound2 = new Audio.Sound();
-        await sound2.loadAsync(require('../../../assets/sounds/effects/newspaper-foley-4-196721_[cut_1sec].mp3'));
+        await sound2.loadAsync(
+          require("../../../assets/sounds/effects/newspaper-foley-4-196721_[cut_1sec].mp3")
+        );
         await sound2.playAsync(0.5);
         setTimeout(() => {
           setReadModalVisible(true); // 모달 열기
@@ -238,7 +254,7 @@ export default function HomeScreen() {
         });
       }, 400); // 500ms 딜레이
     } catch (error) {
-      console.error('Error playing sounds:', error);
+      console.error("Error playing sounds:", error);
     }
   };
 
@@ -250,15 +266,19 @@ export default function HomeScreen() {
       >
         <View style={styles.bottle}>
           <View />
-          {newLetterAdded && canViewLetter ? (  // 새 문서가 추가되었고, 현재 사용자가 읽지 않은 경우에만 표시
+          {newLetterAdded && canViewLetter ? ( // 새 문서가 추가되었고, 현재 사용자가 읽지 않은 경우에만 표시
             <View>
-              <TouchableOpacity onPress={() => { playSounds(); handleViewDocument(); }}>
+              <TouchableOpacity
+                onPress={() => {
+                  playSounds();
+                  handleViewDocument();
+                }}
+              >
                 <Animated.Image
                   source={mainImage_path.glassBottle}
                   style={[
                     styles.image,
                     { transform: [{ translateY }] }, // 애니메이션 적용
-
                   ]}
                 />
               </TouchableOpacity>
@@ -267,7 +287,8 @@ export default function HomeScreen() {
             <View style={styles.emptyMessageContainer}>
               <View style={[styles.emptyMessageCard, styles.boxShadow]}>
                 <Text style={styles.emptyMessage}>
-                  아직 아무 편지가 오지 않았네요..{"\n"}누군가에게 편지를 보내보는 것은 어떠신가요?
+                  아직 아무 편지가 오지 않았네요..{"\n"}누군가에게 편지를
+                  보내보는 것은 어떠신가요?
                 </Text>
               </View>
             </View>
@@ -287,7 +308,6 @@ export default function HomeScreen() {
           onClose={() => setWriteModalVisible(false)} // 모달 닫기
           onSave={handleSave} // 저장 함수 전달
         />
-
 
         {/* 모달 */}
         <Modal
@@ -309,24 +329,28 @@ export default function HomeScreen() {
                   <View style={styles.modalHeader}>
                     <Text style={styles.modalTitle}>오늘의 편지</Text>
                     <View style={styles.receiver}>
-
-                      <Text style={styles.recipient}>{currentLetter?.receiver || "알 수 없음"}</Text>
+                      <Text style={styles.recipient}>
+                        {currentLetter?.receiver || "알 수 없음"}
+                      </Text>
                     </View>
                   </View>
                   <Text style={styles.modalBody}>
                     {currentLetter?.message || "내용을 불러오는 중..."}
                   </Text>
                   <Text>
-                    {currentLetter?.sender ? `${currentLetter.sender.name}가` : "내용을 불러오는 중..."}
+                    {currentLetter?.sender
+                      ? `${currentLetter.sender.name}가`
+                      : "내용을 불러오는 중..."}
                   </Text>
                   {/* 닫기 버튼 */}
                   <TouchableOpacity
                     style={styles.sendButton}
-                    onPress={() => { markAsRead(), setReadModalVisible(false) }}
+                    onPress={() => {
+                      markAsRead(), setReadModalVisible(false);
+                    }}
                   >
                     <Text style={styles.sendButtonText}>닫기</Text>
                   </TouchableOpacity>
-
                 </View>
               </ImageBackground>
               {/* 텍스트 내용 */}
@@ -356,7 +380,6 @@ export default function HomeScreen() {
             </View>
           </View>
         </Modal>
-
       </ImageBackground>
     </SafeAreaView>
   );
@@ -364,10 +387,10 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
   },
   background: {
-    flex: 1
+    flex: 1,
   },
   bottle: {
     flex: 1,
@@ -377,7 +400,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     position: "absolute",
     bottom: 20, // 화면 하단으로부터 20px
-    right: 20,  // 화면 오른쪽으로부터 20px
+    right: 20, // 화면 오른쪽으로부터 20px
   },
   image: {
     // width: 100, // 이미지 크기 조정
@@ -392,7 +415,7 @@ const styles = StyleSheet.create({
   modalContainer: {
     // width: "100%",
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
   },
   modalBackgroundImage: {
     flex: 1,
@@ -400,7 +423,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     resizeMode: "contain", // 편지지가 정비율로 화면에 나타나도록 설정
-
   },
 
   modalContent: {
@@ -428,22 +450,22 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
   },
   profileImage: {
     width: 24,
     height: 24,
     borderRadius: 20,
-    backgroundColor: "#FF7F50",
+    backgroundColor: Main_color.mainHard_10,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 10,
   },
   profileText: {
-    color: "#fff",
+    color: Gray_Color.white,
     fontSize: 18,
     fontWeight: "bold",
-    flexDirection: "column"
+    flexDirection: "column",
   },
   recipient: {
     fontSize: 18,
@@ -466,7 +488,7 @@ const styles = StyleSheet.create({
   sendButtonText: {
     color: "black",
     fontSize: 20,
-    fontWeight: "bold"
+    fontWeight: "bold",
   },
   emptyMessageContainer: {
     flex: 1, // 화면 전체를 차지하도록 설정
@@ -476,19 +498,20 @@ const styles = StyleSheet.create({
   emptyMessageCard: {
     padding: 24,
     borderRadius: 16,
-    backgroundColor: Gray_Color.white
+    backgroundColor: Gray_Color.white,
   },
   boxShadow: {
     shadowColor: "rgba(100, 100, 111, 0.2)", // 그림자의 색상
-    shadowOffset: { width: 0, height: 7 },  // x, y 축의 그림자 거리
-    shadowOpacity: 0.2,                     // 그림자의 투명도
-    shadowRadius: 29,                       // 그림자의 번짐 정도
-    elevation: 5,                           // Android에서 그림자 표시
+    shadowOffset: { width: 0, height: 7 }, // x, y 축의 그림자 거리
+    shadowOpacity: 0.2, // 그림자의 투명도
+    shadowRadius: 29, // 그림자의 번짐 정도
+    elevation: 5, // Android에서 그림자 표시
   },
   emptyMessage: {
     fontFamily: "Ongliep-BakDaHyun",
     fontSize: 24,
     color: Gray_Color.gray_90,
     textAlign: "center",
+    margin: 12,
   },
 });
