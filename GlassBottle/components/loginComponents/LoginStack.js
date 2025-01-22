@@ -3,6 +3,8 @@ import { createStackNavigator } from "@react-navigation/stack";
 // Stack으로 관리할 Component
 import StartScreen from "./StartScreen";
 import LoginScreen from "./LoginScreen";
+import FindPWSCcreen from "./FindPWScreen";
+// 로그인 관련
 import SignUpCheckScreen from "./SignUpCheckScreen";
 import SignUpScreen from "./SignUpScreen";
 import SignUpEndScreen from "./SignUpEndScreen";
@@ -25,6 +27,11 @@ export default function LoginStack() {
       <Stack.Screen
         name="check"
         component={SignUpCheckScreen}
+        options={{ headerShown: false }}
+      ></Stack.Screen>
+      <Stack.Screen
+        name="findPW"
+        component={FindPWSCcreen}
         options={{ headerShown: false }}
       ></Stack.Screen>
       <Stack.Screen

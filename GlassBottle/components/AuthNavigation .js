@@ -4,7 +4,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { useAuth } from "../data/LoginContext";
 
 // component 관련 - navigation을 import
-import LoginStack from "./loginComponents/LoginStaack";
+import LoginStack from "./loginComponents/LoginStack";
 import BottomStack from "./mainComponents/BottomStack";
 
 const Stack = createStackNavigator();

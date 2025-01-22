@@ -73,7 +73,7 @@ export default function LoginScreen({ navigation }) {
           <Text style={styles.loginTitle}>로그인 하기</Text>
           <View
             style={{
-              marginBottom: 36,
+              marginBottom: 16,
               paddingHorizontal: 16,
             }}
           >
@@ -97,8 +97,8 @@ export default function LoginScreen({ navigation }) {
               label="비밀번호"
               value={passwordText}
               onChangeText={(text) => setPasswordText(text)}
-              secureTextEntry={true}
-              keyboardType="default"
+              secureTextEntry={true} // 비밀번호 숨김 여부
+              keyboardType="ascii-capable"
               underlineColor={Main_color.main_40}
               activeUnderlineColor={Main_color.mainHard_50}
               textColor={Gray_Color.black}
@@ -111,31 +111,47 @@ export default function LoginScreen({ navigation }) {
             ></TextInput>
           </View>
         </View>
+
         <View style={styles.bottomContents}>
           <Button
             style={{
               width: "100%",
             }}
-            btn_text={"로그인 하기"}
+            btn_text={"로그인"}
             onPress={handleLogin}
           />
           <View style={styles.signUp}>
-            <Text
-              style={{ ...font_styles.description, color: Gray_Color.gray_40 }}
-            >
-              회원이 아니신가요?
-            </Text>
             <TouchableOpacity
               activeOpacity={0.6}
               onPress={() => {
-                navigation.navigate("check");
+                navigation.navigate("findPW");
               }}
             >
               <Text
                 style={{
-                  marginLeft: 6,
-                  ...font_styles.description,
-                  color: Main_color.mainHard_50,
+                  ...styles.bottom_text,
+                }}
+              >
+                비밀번호 재설정
+              </Text>
+            </TouchableOpacity>
+            <View
+              style={{
+                width: 1,
+                height: 12,
+                backgroundColor: Gray_Color.gray_40,
+                marginHorizontal: 8,
+              }}
+            />
+            <TouchableOpacity
+              activeOpacity={0.6}
+              onPress={() => {
+                navigation.navigate("signUp");
+              }}
+            >
+              <Text
+                style={{
+                  ...styles.bottom_text,
                 }}
               >
                 회원 가입하기
@@ -161,12 +177,22 @@ const styles = StyleSheet.create({
     ...font_styles.title_01,
     color: Gray_Color.black,
   },
+  findPassword: {
+    marginBottom: 24,
+    alignSelf: "flex-end",
+  },
   bottomContents: {
-    alignItems: "flex-end",
+    marginTop: 24,
   },
   signUp: {
-    marginTop: 16,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 24,
     marginRight: 4,
     flexDirection: "row",
+  },
+  bottom_text: {
+    ...font_styles.description_p,
+    color: Gray_Color.gray_40,
   },
 });
