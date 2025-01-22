@@ -23,12 +23,12 @@ export const font_styles = {
     fontFamily: "Pretendard-Medium",
     fontSize: 14,
   },
-  description: {
+  description_p: {
     fontFamily: "Pretendard-Medium",
     fontSize: 12,
   },
-  description:{
+  description: {
     fontFamily: "Ongliep-BakDaHyun",
-    fontSize: 16
-  }
+    fontSize: 16,
+  },
 };
