@@ -12,6 +12,7 @@ import {
 import showToast from "../../../assets/reuseComponents/functions/showToast";
 import { db } from "../../../data/firebase"; // Firebase 설정 파일
 import { collection, addDoc } from "firebase/firestore"; // Firestore 메서드 import
+import { getAuth } from "firebase/auth";
 import { Gray_Color, Main_color } from "../../../assets/colors/theme_colors";
 
 const CommonModal = ({ visible, writer, onClose, onSave }) => {
@@ -59,6 +60,41 @@ const CommonModal = ({ visible, writer, onClose, onSave }) => {
       console.error("Error adding document:", error);
     } finally {
       setIsSubmitting(false); // 제출 완료 후 상태 초기화
+    }
+  };
+
+  // user_info 컬렉션에 sent_mail 서브 컬렉션
+  const saveToSentMail = async () => {
+    const auth = getAuth();
+    const user = auth.currentUser; // 로그인한 사용자 정보
+
+    if (!user) {
+      console.error("사용자가 로그인하지 않았습니다.");
+      return;
+    }
+
+    const userId = user.uid; // 실제 유저 ID 가져오기
+
+    if (!title || !content) {
+      showToast("내용이 작성되지 않았습니다");
+      return;
+    }
+
+    try {
+      // 특정 사용자의 sent_mail 서브컬렉션 참조
+      const sentMailRef = collection(db, "user_info", userId, "sent_mail");
+
+      const newMessage = {
+        receiver: title || "익명",
+        message: content,
+        timestamp: new Date().toISOString(),
+      };
+
+      await addDoc(sentMailRef, newMessage); // 새로운 문서 추가
+
+      console.log("Message saved successfully!");
+    } catch (error) {
+      console.error("Error adding message:", error);
     }
   };
 
