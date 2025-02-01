@@ -4,12 +4,10 @@ import { StyleSheet, ActivityIndicator } from "react-native";
 import { useState, useEffect } from "react";
 // 사용자 정보 관련
 import { auth } from "../../../data/firebase";
-import { onAuthStateChanged } from "firebase/auth";
 import { useAuth } from "../../../data/LoginContext";
-import { signOut } from "firebase/auth";
+import { signOut, onAuthStateChanged } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-
+import { getSentMailCount } from "../../../assets/reuseComponents/functions/sentMail";
 // 디자인 관련
 import { Gray_Color, Main_color } from "../../../assets/colors/theme_colors";
 import Octicons from "@expo/vector-icons/Octicons";
@@ -20,8 +18,14 @@ import showToast from "../../../assets/reuseComponents/functions/showToast";
 
 export default function UserProfileScreen({ navigation }) {
   const [user, setUser] = useState(null);
+  const [sentCount, setSentCount] = useState(0); // 보낸 메일 집계
 
   useEffect(() => {
+    // sent_mail 컬렉션 갯수 저장
+    getSentMailCount(setSentCount);
+    console.log("sentCount: ", sentCount);
+
+    // 실시간 로그인 여부 추척
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser); // 로그인된 사용자의 정보 저장
@@ -30,12 +34,13 @@ export default function UserProfileScreen({ navigation }) {
         setUser(null); // 로그아웃 시 사용자 정보 초기화
       }
     });
-    
+
     return () => unsubscribe(); // 언마운트 시 구독 해제
   }, []);
 
   const { setIsLoggedIn } = useAuth();
-  
+
+  // 로그아웃
   const handleLogout = async () => {
     await signOut(auth);
     await AsyncStorage.setItem("isLoggedIn", "false");
@@ -70,9 +75,14 @@ export default function UserProfileScreen({ navigation }) {
           <Text style={styles.displayNameSub}>의 보관함</Text>
         </View>
         <View style={styles.contentsContainer}>
-          <TouchableOpacity style={styles.letterSpace}>
+          <TouchableOpacity
+            style={styles.letterSpace}
+            onPress={() => {
+              navigation.navigate("sent");
+            }}
+          >
             <Text style={styles.letterTitle}>보낸 편지</Text>
-            <Text style={font_styles.subtitle}>200개</Text>
+            <Text style={font_styles.subtitle}>{sentCount}개</Text>
           </TouchableOpacity>
           <View style={styles.line} />
           <TouchableOpacity style={styles.letterSpace}>

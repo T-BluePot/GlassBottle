@@ -10,9 +10,9 @@ import {
   Vibration, // 진동 기능 추가
 } from "react-native";
 import showToast from "../../../assets/reuseComponents/functions/showToast";
+import saveToSentMail from "../../../assets/reuseComponents/functions/saveToSentMail";
 import { db } from "../../../data/firebase"; // Firebase 설정 파일
 import { collection, addDoc } from "firebase/firestore"; // Firestore 메서드 import
-import { getAuth } from "firebase/auth";
 import { Gray_Color, Main_color } from "../../../assets/colors/theme_colors";
 
 const CommonModal = ({ visible, writer, onClose, onSave }) => {
@@ -20,11 +20,8 @@ const CommonModal = ({ visible, writer, onClose, onSave }) => {
   const [content, setContent] = useState(""); // 메시지 (내용)
   const [isSubmitting, setIsSubmitting] = useState(false); // 제출 중 상태
 
+  // 편지 관리
   const saveToFirebase = async () => {
-    if (title === "" || content === "") {
-      showToast("내용이 작성되지 않았습니다");
-      return;
-    }
     if (isSubmitting) {
       // 진동 및 경고 메시지 추가
       Vibration.vibrate(100); // 100ms 진동
@@ -63,39 +60,15 @@ const CommonModal = ({ visible, writer, onClose, onSave }) => {
     }
   };
 
-  // user_info 컬렉션에 sent_mail 서브 컬렉션
-  const saveToSentMail = async () => {
-    const auth = getAuth();
-    const user = auth.currentUser; // 로그인한 사용자 정보
-
-    if (!user) {
-      console.error("사용자가 로그인하지 않았습니다.");
-      return;
-    }
-
-    const userId = user.uid; // 실제 유저 ID 가져오기
-
-    if (!title || !content) {
+  const handleSaveMail = () => {
+    // 텍스트 필드가 빈 경우
+    if (title === "" || content === "") {
       showToast("내용이 작성되지 않았습니다");
       return;
     }
 
-    try {
-      // 특정 사용자의 sent_mail 서브컬렉션 참조
-      const sentMailRef = collection(db, "user_info", userId, "sent_mail");
-
-      const newMessage = {
-        receiver: title || "익명",
-        message: content,
-        timestamp: new Date().toISOString(),
-      };
-
-      await addDoc(sentMailRef, newMessage); // 새로운 문서 추가
-
-      console.log("Message saved successfully!");
-    } catch (error) {
-      console.error("Error adding message:", error);
-    }
+    saveToFirebase(); // 메인 편지 관리
+    saveToSentMail(title, content); // user_info  편지 관리
   };
 
   return (
@@ -142,7 +115,7 @@ const CommonModal = ({ visible, writer, onClose, onSave }) => {
             {/* 저장 버튼 */}
             <TouchableOpacity
               style={styles.saveButton}
-              onPress={saveToFirebase}
+              onPress={handleSaveMail}
               activeOpacity={0.8}
             >
               <Text style={styles.saveButtonText}>저장</Text>

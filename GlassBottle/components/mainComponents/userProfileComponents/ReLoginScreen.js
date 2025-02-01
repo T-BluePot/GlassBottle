@@ -59,7 +59,6 @@ export default function ReLoginScreen({ navigation }) {
 
   const handleLogin = async () => {
     if (emailText === "" || passwordText === "") {
-      showToast("모든 항목을 입력해주세요");
       return;
     }
     if (!isValidEmail(emailText)) {
@@ -137,7 +136,10 @@ export default function ReLoginScreen({ navigation }) {
         <Button
           style={{
             width: "100%",
-            backgroundColor: Main_color.main_red,
+            backgroundColor:
+              emailText === "" || passwordText === ""
+                ? Gray_Color.gray_20
+                : Main_color.main_red,
           }}
           btn_text={"탈퇴하기"}
           onPress={handleLogin}
