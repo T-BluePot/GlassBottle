@@ -1,7 +1,7 @@
 import { SafeAreaView } from "react-native-safe-area-context";
 import { View, Text, TouchableOpacity } from "react-native";
 import { StyleSheet, ActivityIndicator } from "react-native";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 // 사용자 정보 관련
 import { auth } from "../../../data/firebase";
 import { useAuth } from "../../../data/LoginContext";
@@ -20,23 +20,42 @@ export default function UserProfileScreen({ navigation }) {
   const [user, setUser] = useState(null);
   const [sentCount, setSentCount] = useState(0); // 보낸 메일 집계
 
-  useEffect(() => {
-    // sent_mail 컬렉션 갯수 저장
-    getSentMailCount(setSentCount);
-    console.log("sentCount: ", sentCount);
+  // useRef로 구독 해제 함수를 저장
+  const unsubscribeSentMailRef = useRef(null);
 
-    // 실시간 로그인 여부 추척
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+  useEffect(() => {
+    // 로그인 상태에 따라 sent_mail 구독 등록
+    if (auth.currentUser) {
+      unsubscribeSentMailRef.current = getSentMailCount(setSentCount);
+    }
+
+    // 실시간 로그인 여부 추적
+    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
-        setUser(currentUser); // 로그인된 사용자의 정보 저장
-        AsyncStorage.setItem("user", JSON.stringify(user));
+        setUser(currentUser);
+        AsyncStorage.setItem("user", JSON.stringify(currentUser));
+        // 만약 새로 로그인하면 onSnapshot 구독이 없을 경우 등록
+        if (!unsubscribeSentMailRef.current) {
+          unsubscribeSentMailRef.current = getSentMailCount(setSentCount);
+        }
       } else {
-        setUser(null); // 로그아웃 시 사용자 정보 초기화
+        setUser(null);
+        // 로그아웃 시 onSnapshot 구독 해제
+        if (unsubscribeSentMailRef.current) {
+          unsubscribeSentMailRef.current();
+          unsubscribeSentMailRef.current = null;
+        }
       }
     });
 
-    return () => unsubscribe(); // 언마운트 시 구독 해제
-  }, []);
+    // 컴포넌트 언마운트 시 모든 구독 해제
+    return () => {
+      if (unsubscribeSentMailRef.current) {
+        unsubscribeSentMailRef.current();
+      }
+      unsubscribeAuth && unsubscribeAuth();
+    };
+  }, [auth]);
 
   const { setIsLoggedIn } = useAuth();
 

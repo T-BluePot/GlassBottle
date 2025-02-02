@@ -165,7 +165,7 @@ export default function HomeScreen() {
     if (!latestDocumentId) return;
 
     try {
-      console.log("최근 문서 가져오기", latestDocumentId);
+      // console.log("최근 문서 가져오기", latestDocumentId);
       const documentRef = doc(db, "letters", latestDocumentId);
       const documentSnapshot = await getDoc(documentRef);
 
@@ -186,6 +186,7 @@ export default function HomeScreen() {
       console.error("문서를 가져오는 중 오류 발생:", error);
     }
   };
+
   // 4. 읽은 사람 배열에 사용자 추가
   const markAsRead = async () => {
     if (!latestDocumentId || !user) {
@@ -217,6 +218,7 @@ export default function HomeScreen() {
     console.log("저장된 제목:", title);
     console.log("저장된 내용:", content);
   };
+
   if (!user) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
