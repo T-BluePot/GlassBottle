@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { View, Text, TextInput, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 // 컴포넌트
 import BackHeader from "../../../assets/reuseComponents/headerComponents/BackHeader";
 // 디자인

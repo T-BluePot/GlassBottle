@@ -10,6 +10,7 @@ import {
   Vibration, // 진동 기능 추가
 } from "react-native";
 import showToast from "../../../assets/reuseComponents/functions/showToast";
+import saveToSentMail from "../../../assets/reuseComponents/functions/saveToSentMail";
 import { db } from "../../../data/firebase"; // Firebase 설정 파일
 import { collection, addDoc } from "firebase/firestore"; // Firestore 메서드 import
 import { Gray_Color, Main_color } from "../../../assets/colors/theme_colors";
@@ -19,11 +20,8 @@ const CommonModal = ({ visible, writer, onClose, onSave }) => {
   const [content, setContent] = useState(""); // 메시지 (내용)
   const [isSubmitting, setIsSubmitting] = useState(false); // 제출 중 상태
 
+  // 편지 관리
   const saveToFirebase = async () => {
-    if (title === "" || content === "") {
-      showToast("내용이 작성되지 않았습니다");
-      return;
-    }
     if (isSubmitting) {
       // 진동 및 경고 메시지 추가
       Vibration.vibrate(100); // 100ms 진동
@@ -60,6 +58,17 @@ const CommonModal = ({ visible, writer, onClose, onSave }) => {
     } finally {
       setIsSubmitting(false); // 제출 완료 후 상태 초기화
     }
+  };
+
+  const handleSaveMail = () => {
+    // 텍스트 필드가 빈 경우
+    if (title === "" || content === "") {
+      showToast("내용이 작성되지 않았습니다");
+      return;
+    }
+
+    saveToFirebase(); // 메인 편지 관리
+    saveToSentMail(title, content); // user_info  편지 관리
   };
 
   return (
@@ -106,7 +115,7 @@ const CommonModal = ({ visible, writer, onClose, onSave }) => {
             {/* 저장 버튼 */}
             <TouchableOpacity
               style={styles.saveButton}
-              onPress={saveToFirebase}
+              onPress={handleSaveMail}
               activeOpacity={0.8}
             >
               <Text style={styles.saveButtonText}>저장</Text>
