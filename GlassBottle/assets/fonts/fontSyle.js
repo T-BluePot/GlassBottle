@@ -29,6 +29,23 @@ export const font_styles = {
   },
   description: {
     fontFamily: "Ongliep-BakDaHyun",
-    fontSize: 16,
+    fontSize: 18,
+  },
+
+  main_title: {
+    fontFamily: "Ongliep-BakDaHyun",
+    fontSize: 32,
+  },
+  sub_title: {
+    fontFamily: "Ongliep-BakDaHyun",
+    fontSize: 28,
+  },
+  body_title: {
+    fontFamily: "Ongliep-BakDaHyun",
+    fontSize: 24,
+  },
+  caption_title: {
+    fontFamily: "Ongliep-BakDaHyun",
+    fontSize: 14,
   },
 };

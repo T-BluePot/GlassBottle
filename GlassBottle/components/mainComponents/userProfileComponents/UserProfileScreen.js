@@ -8,6 +8,7 @@ import { useAuth } from "../../../data/LoginContext";
 import { signOut, onAuthStateChanged } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getSentMailCount } from "../../../assets/reuseComponents/functions/sentMail";
+import { getReceiveCount } from "../../../assets/reuseComponents/functions/receiveMail";
 // 디자인 관련
 import { Gray_Color, Main_color } from "../../../assets/colors/theme_colors";
 import Octicons from "@expo/vector-icons/Octicons";
@@ -19,31 +20,41 @@ import showToast from "../../../assets/reuseComponents/functions/showToast";
 export default function UserProfileScreen({ navigation }) {
   const [user, setUser] = useState(null);
   const [sentCount, setSentCount] = useState(0); // 보낸 메일 집계
+  const [receiveCount, setReceiveCount] = useState(0);
 
-  // useRef로 구독 해제 함수를 저장
+  // 구독 해제 함수를 저장할 useRef (각각 하나씩)
   const unsubscribeSentMailRef = useRef(null);
+  const unsubscribeReceiveMailRef = useRef(null);
 
   useEffect(() => {
-    // 로그인 상태에 따라 sent_mail 구독 등록
+    // 초기 렌더링 시 이미 로그인된 경우 구독 등록
     if (auth.currentUser) {
       unsubscribeSentMailRef.current = getSentMailCount(setSentCount);
+      unsubscribeReceiveMailRef.current = getReceiveCount(setReceiveCount);
     }
 
-    // 실시간 로그인 여부 추적
+    // 로그인 상태 변화 실시간 추적
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
         AsyncStorage.setItem("user", JSON.stringify(currentUser));
-        // 만약 새로 로그인하면 onSnapshot 구독이 없을 경우 등록
+        // 새로 로그인하면 각 구독이 없을 경우 등록
         if (!unsubscribeSentMailRef.current) {
           unsubscribeSentMailRef.current = getSentMailCount(setSentCount);
         }
+        if (!unsubscribeReceiveMailRef.current) {
+          unsubscribeReceiveMailRef.current = getReceiveCount(setReceiveCount);
+        }
       } else {
         setUser(null);
-        // 로그아웃 시 onSnapshot 구독 해제
+        // 로그아웃 등으로 유저가 없을 경우 구독 해제
         if (unsubscribeSentMailRef.current) {
           unsubscribeSentMailRef.current();
           unsubscribeSentMailRef.current = null;
+        }
+        if (unsubscribeReceiveMailRef.current) {
+          unsubscribeReceiveMailRef.current();
+          unsubscribeReceiveMailRef.current = null;
         }
       }
     });
@@ -53,18 +64,38 @@ export default function UserProfileScreen({ navigation }) {
       if (unsubscribeSentMailRef.current) {
         unsubscribeSentMailRef.current();
       }
-      unsubscribeAuth && unsubscribeAuth();
+      if (unsubscribeReceiveMailRef.current) {
+        unsubscribeReceiveMailRef.current();
+      }
+      if (unsubscribeAuth) {
+        unsubscribeAuth();
+      }
     };
-  }, [auth]);
+  }, []);
 
   const { setIsLoggedIn } = useAuth();
 
-  // 로그아웃
+  // 로그아웃: 구독 해제 후 로그아웃 진행
   const handleLogout = async () => {
-    await signOut(auth);
-    await AsyncStorage.setItem("isLoggedIn", "false");
-    setIsLoggedIn(false);
-    showToast("로그아웃 되었습니다");
+    try {
+      // 먼저 구독 해제
+      if (unsubscribeSentMailRef.current) {
+        unsubscribeSentMailRef.current();
+        unsubscribeSentMailRef.current = null;
+      }
+      if (unsubscribeReceiveMailRef.current) {
+        unsubscribeReceiveMailRef.current();
+        unsubscribeReceiveMailRef.current = null;
+      }
+      // Firebase 로그아웃
+      await signOut(auth);
+      await AsyncStorage.setItem("isLoggedIn", "false");
+      setIsLoggedIn(false);
+      showToast("로그아웃 되었습니다");
+    } catch (error) {
+      console.error("로그아웃 중 오류 발생:", error);
+      showToast("로그아웃 중 오류가 발생했습니다.");
+    }
   };
 
   const handleResign = () => {
@@ -84,12 +115,7 @@ export default function UserProfileScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       <Header children={"내 정보"} />
       <View style={styles.topContents}>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "baseline",
-          }}
-        >
+        <View style={{ flexDirection: "row", alignItems: "baseline" }}>
           <Text style={styles.displayName}>{user.displayName}</Text>
           <Text style={styles.displayNameSub}>의 보관함</Text>
         </View>
@@ -104,9 +130,14 @@ export default function UserProfileScreen({ navigation }) {
             <Text style={font_styles.subtitle}>{sentCount}개</Text>
           </TouchableOpacity>
           <View style={styles.line} />
-          <TouchableOpacity style={styles.letterSpace}>
+          <TouchableOpacity
+            style={styles.letterSpace}
+            onPress={() => {
+              navigation.navigate("receive");
+            }}
+          >
             <Text style={styles.letterTitle}>받은 편지</Text>
-            <Text style={font_styles.subtitle}>200개</Text>
+            <Text style={font_styles.subtitle}>{receiveCount}개</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -156,11 +187,11 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   displayName: {
-    ...font_styles.header,
+    ...font_styles.main_title,
   },
   displayNameSub: {
     marginLeft: 4,
-    ...font_styles.title_02,
+    ...font_styles.sub_title,
   },
   userInfo: {
     flexDirection: "row",
@@ -203,7 +234,7 @@ const styles = StyleSheet.create({
     fontFamily: "Pretendard-Bold",
     color: Gray_Color.black,
     paddingHorizontal: 24,
-    marginVertical: 16,
+    marginVertical: 24,
   },
   button: {
     width: "100%",

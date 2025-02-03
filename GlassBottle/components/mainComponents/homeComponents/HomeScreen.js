@@ -21,10 +21,13 @@ import {
   arrayUnion,
   query,
   orderBy,
+  addDoc,
 } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { db, auth } from "../../../data/firebase"; // Firebase 설정 파일
 import { Audio } from "expo-av";
+
+import { saveRecieveMail } from "../../../assets/reuseComponents/functions/receiveMail.js"; // 받은 메일 저장
 
 //유저 정보 가져와 사용하기
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -34,6 +37,7 @@ import CommonModal from "../../common/modal/CommonModal.js";
 
 import mainImage_path from "../../../assets/images/Icons/Main_Icons/mainImage_path.js";
 import { Gray_Color, Main_color } from "../../../assets/colors/theme_colors"; // 경로에 맞게 수정
+import LetterModal from "../../common/modal/LetterModal.js";
 
 export default function HomeScreen() {
   const translateY = useRef(new Animated.Value(0)).current;
@@ -45,6 +49,8 @@ export default function HomeScreen() {
   const [canViewLetter, setCanViewLetter] = useState(false); // 현재 사용자가 편지를 읽을 수 있는지 여부
   const [user, setUser] = useState(null); // 유저 정보 상태
   const soundRef = useRef(null); // sound 객체를 useRef로 관리
+
+  const [letterData, setLetterData] = useState(); // 받은 편지 데이터 가공
 
   // 홈에서만 배경음 재생
   useEffect(() => {
@@ -170,8 +176,9 @@ export default function HomeScreen() {
       const documentSnapshot = await getDoc(documentRef);
 
       if (documentSnapshot.exists()) {
-        const data = documentSnapshot.data();
+        const data = documentSnapshot.data(); // 최근 문서 데이터
         setCurrentLetter(data); // 문서 데이터 저장
+        saveRecieveMail(data);
 
         // 읽은 사람 배열(viewers)에 현재 사용자가 없는지 확인
         if (!data.viewers?.includes(user.uid)) {
@@ -193,7 +200,6 @@ export default function HomeScreen() {
       console.log("현재 유저 정보가 없습니다. 업데이트를 중단합니다.");
       return; // user가 null이면 실행 중단
     }
-    console.log("현재 유저 정보22 :", user);
     try {
       const documentRef = doc(db, "letters", latestDocumentId);
       const documentSnapshot = await getDoc(documentRef);
@@ -311,7 +317,7 @@ export default function HomeScreen() {
           onSave={handleSave} // 저장 함수 전달
         />
 
-        {/* 모달 */}
+        {/* 기존 모달 
         <Modal
           transparent={true}
           visible={readModalVisible}
@@ -320,13 +326,11 @@ export default function HomeScreen() {
         >
           <View style={styles.modalBackground}>
             <View style={styles.modalContainer}>
-              {/* 모달 배경 이미지 */}
               <ImageBackground
                 source={require("../../../assets/images/main_file/letter_01_sheepskin.png")}
                 style={styles.modalBackgroundImage}
                 resizeMode="contain"
               >
-                {/* 텍스트 내용 */}
                 <View style={styles.modalContent}>
                   <View style={styles.modalHeader}>
                     <Text style={styles.modalTitle}>오늘의 편지</Text>
@@ -344,7 +348,6 @@ export default function HomeScreen() {
                       ? `${currentLetter.sender.name}가`
                       : "내용을 불러오는 중..."}
                   </Text>
-                  {/* 닫기 버튼 */}
                   <TouchableOpacity
                     style={styles.sendButton}
                     onPress={() => {
@@ -355,33 +358,20 @@ export default function HomeScreen() {
                   </TouchableOpacity>
                 </View>
               </ImageBackground>
-              {/* 텍스트 내용 */}
-              {/* <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>오늘의 편지</Text>
-                <View style={styles.modalHeader}>
-                  <View style={styles.profileImage}>
-                    <Text style={styles.profileText}>J</Text>
-                  </View>
-                  <Text style={styles.recipient}>○○에게</Text>
-                </View>
-                <Text style={styles.modalBody}>
-                  관람할 집회는 앞으로 토요일만 한다고 한다.
-                  {"\n"}이제부터 시작이다!{"\n"}
-                  우리나라를 살려야 한다.{"\n"}세상이 멸망.{"\n"}
-                  나는 지금 1초씩 줄어들어가고 있다.{"\n"}
-                  그들이 왜 그렇게 열심히 얘기하는지 알 것 같다...
-                </Text> */}
-              {/* 보내기 버튼 */}
-              {/* <TouchableOpacity
-                  style={styles.sendButton}
-                  onPress={() => setModalVisible(false)}
-                >
-                  <Text style={styles.sendButtonText}>보내기</Text>
-                </TouchableOpacity>
-              </View> */}
+             
             </View>
           </View>
-        </Modal>
+        </Modal>*/}
+
+        <LetterModal
+          visible={readModalVisible}
+          hideModal={() => {
+            markAsRead();
+            setReadModalVisible(false);
+          }}
+          selectedItem={currentLetter}
+          headerType="simple"
+        />
       </ImageBackground>
     </SafeAreaView>
   );

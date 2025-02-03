@@ -15,7 +15,7 @@ export default function StartScreen({ navigation }) {
       <View>
         <Text
           style={{
-            ...font_styles.header,
+            ...font_styles.main_title,
             textAlign: "center",
             color: Main_color.mainHard_50,
           }}
@@ -24,7 +24,7 @@ export default function StartScreen({ navigation }) {
         </Text>
         <Text
           style={{
-            ...font_styles.caption,
+            ...font_styles.description,
             textAlign: "center",
             color: Gray_Color.gray_40,
           }}

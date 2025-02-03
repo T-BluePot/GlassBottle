@@ -4,6 +4,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import UserProfileScreen from "./UserProfileScreen";
 
 import SentMailScreen from "./mailConponent/SentMailScreen";
+import ReceieveMailScreen from "./mailConponent/ReceiveMailScreen";
 
 import ResignScrren from "./ResignScrren";
 import ReLoginScreen from "./ReLoginScreen";
@@ -24,6 +25,10 @@ export default function UserProfileStack() {
         component={UserProfileScreen}
       ></Stack.Screen>
       <Stack.Screen name="sent" component={SentMailScreen}></Stack.Screen>
+      <Stack.Screen
+        name="receive"
+        component={ReceieveMailScreen}
+      ></Stack.Screen>
       <Stack.Screen name="resign" component={ResignScrren}></Stack.Screen>
       <Stack.Screen name="relogin" component={ReLoginScreen}></Stack.Screen>
       <Stack.Screen name="edit" component={EditInfoScreen}></Stack.Screen>
