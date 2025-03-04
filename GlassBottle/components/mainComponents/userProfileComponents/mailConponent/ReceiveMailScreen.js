@@ -7,14 +7,11 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  ImageBackground,
-  Modal,
   Alert,
 } from "react-native";
 
 import { Gray_Color, Main_color } from "../../../../assets/colors/theme_colors";
 import { font_styles } from "../../../../assets/fonts/fontSyle";
-import Octicons from "@expo/vector-icons/Octicons";
 
 import TitleBackHeader from "../../../../assets/reuseComponents/headerComponents/TitleBackHeader";
 import LetterModal from "../../../common/modal/LetterModal";
@@ -25,7 +22,6 @@ import {
 } from "../../../../assets/reuseComponents/functions/receiveMail";
 import useHideBottomBar from "../../../../assets/reuseComponents/functions/useHideBottomBar";
 import showToast from "../../../../assets/reuseComponents/functions/showToast";
-import { ScrollView } from "react-native-gesture-handler";
 
 export default function ReceieveMailScreen({ navigation }) {
   useHideBottomBar(navigation);
